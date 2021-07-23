@@ -1,7 +1,7 @@
 assume cs:code
 
 data_str segment
-    dw 12666,1,8,3,38
+    dw 123,12666,1,8,3,38
 data_str ends
 
 data segment
@@ -24,11 +24,8 @@ start:  mov bx,data
         mov dl,3
     p:  mov si,0
         mov ax,es:[di]
-        push dx
-        mov dx,0
         call dtoc
 
-        pop dx
 
         
         push cx
@@ -70,32 +67,22 @@ clean:  push ax
         pop ax
         ret
 
-    ; ax=dword型数据低16位
-    ; dx=dword型数据高16位
+    ; ax=word型数据
     ; ds:si=字符串首地址
 dtoc:   push cx
         push dx
-        push bx
-        ; mov dx,0
-        ; mov bx,10
-        mov cx,10
+        mov dx,0
+        mov bx,10
     
-    s:  call divdw  ; ax 商的低16位
-                    ; dx 商的高16位
-                    ; cx 余数
-        mov bx,cx
-
-        mov cx,ax
-        or cx,0
-        or cx,dx    ; 判断高16位和低16位是否都为0
-
-
-        add bx,30H  ;计算当前字符的ascii值
-        push bx     ;压栈
+    s:  div bx      ; ax商  dx余数
+        mov cx,ax   ;
+        add dx,30H  ;计算当前字符的ascii值
+        push dx     ;压栈
+        mov dx,0    
         inc si
+
         jcxz g      ; 商为0时跳转到下一个处理部分
         mov cx,2
-
         loop s
 
     g:  mov cx,si
@@ -104,31 +91,11 @@ dtoc:   push cx
         inc si
         loop s0
 
-        pop bx
         pop dx
         pop cx
         ret
 
-    ;@params ax=dword lot 16 bit
-    ;        dx=dword high 16 bit
-    ;        cx=dividor
-    ;@return ax=quotient low 16bit
-    ;        dx=quotient high 16bit
-    ;        cx=remainder
-divdw:  push ax
-        mov ax,dx
-        mov dx,0
-        div cx
-        mov bx,ax   ; 保存商到bx里，结果的高位部分 
-                    ; 余数在dx里
 
-        pop ax      ; 弹出被除数低位数据
-        div cx
-        
-        mov cx,dx
-        mov dx,bx
-
-        ret
 
 	; dh=行号(0~24)
 	; dl=列号(0~79)
